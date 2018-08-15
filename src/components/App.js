@@ -1,9 +1,12 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 
-import './App.css';
+import "./App.css";
+import Post from "./Post/Post";
+import Header from "./Header/Header";
+import Compose from "./Compose/Compose";
+import axios from "axios";
 
-import Header from './Header/Header';
-import Compose from './Compose/Compose';
+const baseUrl = "https://practiceapi.devmountain.com/api/posts";
 
 class App extends Component {
   constructor() {
@@ -13,25 +16,42 @@ class App extends Component {
       posts: []
     };
 
-    this.updatePost = this.updatePost.bind( this );
-    this.deletePost = this.deletePost.bind( this );
-    this.createPost = this.createPost.bind( this );
+    this.updatePost = this.updatePost.bind(this);
+    this.deletePost = this.deletePost.bind(this);
+    this.createPost = this.createPost.bind(this);
   }
-  
+
   componentDidMount() {
-
+    axios.get(`${baseUrl}`).then(res => {
+      this.setState({
+        posts: res.data
+      });
+    });
   }
 
-  updatePost() {
-  
+  updatePost(id, text) {
+    axios.put(`${baseUrl}?id=${id}`, { text }).then(res => {
+      this.setState({
+        posts: res.data
+      });
+    });
   }
 
-  deletePost() {
-
+  deletePost(id) {
+    axios.delete(`${baseUrl}?id=${id}`).then(res => {
+      this.setState({ posts: res.data });
+    });
   }
 
-  createPost() {
-
+  createPost(text) {
+    axios
+      .post(`${baseUrl}`, { text })
+      .then(res => {
+        this.setState({ posts: res.data });
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
 
   render() {
@@ -42,9 +62,17 @@ class App extends Component {
         <Header />
 
         <section className="App__content">
-
-          <Compose />
-          
+          <Compose createPostFn={this.createPost} />
+          {posts.map(post => (
+            <Post
+              key={post.id}
+              text={post.text}
+              date={post.date}
+              id={post.id}
+              updatePostFn={this.updatePost}
+              deletePostFn={this.deletePost}
+            />
+          ))}
         </section>
       </div>
     );
